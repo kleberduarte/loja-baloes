@@ -38,8 +38,15 @@ export function mostrarKits() {
 }
 
 export function setupFormularioProduto() {
-  document.getElementById("formProduto")?.addEventListener("submit", function (e) {
+  const form = document.getElementById("formProduto");
+  if (!form) return;
+
+  form.addEventListener("submit", function (e) {
     e.preventDefault();
+
+    // Detecta se é atualização ou cadastro
+    const produtoId = form.getAttribute("data-edit-id");
+
     const produto = {
       nome: document.getElementById("produtoNome")?.value,
       descricao: document.getElementById("produtoDescricao")?.value,
@@ -49,19 +56,81 @@ export function setupFormularioProduto() {
       kit: document.getElementById("produtoKit")?.checked
     };
 
-    fetch(`${API_URL}/api/produtos`, {
-      method: "POST",
-      headers: authenticatedHeaders(),
-      body: JSON.stringify(produto)
-    })
-      .then(res => res.ok ? res.json() : Promise.reject("Erro ao cadastrar produto"))
-      .then(() => {
-        showAlert("Produto cadastrado com sucesso!", "success");
-        document.getElementById("formProduto").reset();
-        carregarProdutos();
-      })
-      .catch(err => showAlert("Erro: " + err, "danger"));
+    if (produtoId) {
+      // Atualizar produto
+      editarProduto(produtoId, produto);
+    } else {
+      // Cadastrar novo produto
+      cadastrarProduto(produto);
+    }
   });
+}
+
+// Função para cadastrar produto
+function cadastrarProduto(produto) {
+  fetch(`${API_URL}/api/produtos`, {
+    method: "POST",
+    headers: authenticatedHeaders(),
+    body: JSON.stringify(produto)
+  })
+    .then(res => res.ok ? res.json() : Promise.reject("Erro ao cadastrar produto"))
+    .then(() => {
+      showAlert("Produto cadastrado com sucesso!", "success");
+      resetFormProduto();
+      carregarProdutos();
+    })
+    .catch(err => showAlert("Erro: " + err, "danger"));
+}
+
+// Função para editar produto
+export function editarProduto(id, produto) {
+  fetch(`${API_URL}/api/produtos/${id}`, {
+    method: "PUT",
+    headers: {
+      ...authenticatedHeaders(),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(produto)
+  })
+    .then(res => {
+      if (res.ok) return res.json();
+      else return res.json().then(e => Promise.reject(e.message || "Erro ao atualizar produto"));
+    })
+    .then(() => {
+      showAlert("Produto atualizado com sucesso!", "success");
+      resetFormProduto();
+      carregarProdutos();
+    })
+    .catch(err => showAlert("Erro: " + err, "danger"));
+}
+
+// Função para preencher o formulário para edição
+export function preencherFormularioParaEdicao(produto) {
+  const form = document.getElementById("formProduto");
+  if (!form) return;
+
+  document.getElementById("produtoNome").value = produto.nome || "";
+  document.getElementById("produtoDescricao").value = produto.descricao || "";
+  document.getElementById("produtoPreco").value = produto.preco || "";
+  document.getElementById("produtoEstoque").value = produto.estoque || "";
+  document.getElementById("produtoCategoria").value = produto.categoria || "";
+  document.getElementById("produtoKit").checked = produto.kit || false;
+
+  // Marca o formulário como edição com o id do produto
+  form.setAttribute("data-edit-id", produto.id);
+
+  // Trocar texto do botão para "Atualizar Produto"
+  form.querySelector("button[type=submit]").textContent = "Atualizar Produto";
+}
+
+// Função para resetar formulário e voltar para cadastro
+function resetFormProduto() {
+  const form = document.getElementById("formProduto");
+  if (!form) return;
+
+  form.reset();
+  form.removeAttribute("data-edit-id");
+  form.querySelector("button[type=submit]").textContent = "Cadastrar Produto";
 }
 
 // Função para excluir produto pelo ID
@@ -86,11 +155,10 @@ export function excluirProduto(id) {
 function renderizarTabela(produtos) {
   const tabela = document.getElementById("listaProdutos");
   if (!tabela) return;
-  tabela.innerHTML = `
-    <tr>
-      <th>ID</th><th>Nome</th><th>Descrição</th><th>Preço</th>
-      <th>Estoque</th><th>Categoria</th><th>Kit</th><th>Ações</th>
-    </tr>`;
+
+  // Limpa a tabela
+  tabela.innerHTML = "";
+
   produtos.forEach(p => {
     tabela.innerHTML += `
       <tr>
@@ -102,8 +170,25 @@ function renderizarTabela(produtos) {
         <td>${p.categoria || "-"}</td>
         <td>${p.kit ? "✅" : "❌"}</td>
         <td>
+          <button class="btn btn-sm btn-primary me-1" onclick="editarProdutoUI(${p.id})">Editar</button>
           <button class="btn btn-sm btn-danger" onclick="excluirProduto(${p.id})">Excluir</button>
         </td>
       </tr>`;
   });
+}
+
+// Função para buscar produto pelo id e abrir no formulário para edição (chamada pelo botão editar na tabela)
+export function editarProdutoUI(id) {
+  fetch(`${API_URL}/api/produtos/${id}`, {
+    headers: authenticatedHeaders()
+  })
+    .then(res => res.ok ? res.json() : Promise.reject("Produto não encontrado"))
+    .then(produto => {
+      preencherFormularioParaEdicao(produto);
+      // Mostra a seção de produtos (caso esteja oculta)
+      const section = document.getElementById("produtoSection");
+      if (section) section.style.display = "block";
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    })
+    .catch(err => showAlert("Erro: " + err, "danger"));
 }
