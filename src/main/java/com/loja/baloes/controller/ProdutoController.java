@@ -69,18 +69,18 @@ public class ProdutoController {
         return produtoService.listarKits();
     }
 
-    // ❌ Excluir produto por ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> excluir(@PathVariable Long id) {
         return produtoService.listarTodos().stream()
                 .filter(produto -> produto.getId().equals(id))
                 .findFirst()
                 .map(produto -> {
-                    produtoService.salvar(null); // substitua por repo.deleteById(id) se quiser
+                    produtoService.excluir(id); // ✅ Corrigido: chama o método que realmente exclui
                     return ResponseEntity.noContent().build();
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
 
     // ✏️ Atualizar produto com DTO (PUT /api/produtos/{id})
     @PutMapping("/{id}")

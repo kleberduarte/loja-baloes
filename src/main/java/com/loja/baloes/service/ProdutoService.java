@@ -67,4 +67,9 @@ public class ProdutoService {
 
         return repo.save(produto);
     }
+
+    // ❌ Excluir produto por ID
+    public void excluir(Long id) {
+        repo.deleteById(id);
+    }
 }
