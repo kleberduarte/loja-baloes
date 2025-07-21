@@ -64,13 +64,32 @@ export function setupFormularioProduto() {
   });
 }
 
+// Função para excluir produto pelo ID
+export function excluirProduto(id) {
+  if (!confirm("Tem certeza que deseja excluir este produto?")) return;
+
+  fetch(`${API_URL}/api/produtos/${id}`, {
+    method: "DELETE",
+    headers: authenticatedHeaders()
+  })
+    .then(res => {
+      if (res.ok) {
+        showAlert("Produto excluído com sucesso!", "success");
+        carregarProdutos(); // Atualiza a lista após exclusão
+      } else {
+        return Promise.reject("Erro ao excluir produto");
+      }
+    })
+    .catch(err => showAlert("Erro: " + err, "danger"));
+}
+
 function renderizarTabela(produtos) {
   const tabela = document.getElementById("listaProdutos");
   if (!tabela) return;
   tabela.innerHTML = `
     <tr>
       <th>ID</th><th>Nome</th><th>Descrição</th><th>Preço</th>
-      <th>Estoque</th><th>Categoria</th><th>Kit</th>
+      <th>Estoque</th><th>Categoria</th><th>Kit</th><th>Ações</th>
     </tr>`;
   produtos.forEach(p => {
     tabela.innerHTML += `
@@ -82,6 +101,9 @@ function renderizarTabela(produtos) {
         <td>${p.estoque}</td>
         <td>${p.categoria || "-"}</td>
         <td>${p.kit ? "✅" : "❌"}</td>
+        <td>
+          <button class="btn btn-sm btn-danger" onclick="excluirProduto(${p.id})">Excluir</button>
+        </td>
       </tr>`;
   });
 }

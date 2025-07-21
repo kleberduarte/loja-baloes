@@ -62,4 +62,15 @@ public class ProdutoController {
     public List<Produto> listarKits() {
         return repo.findByKitTrue();
     }
+
+    // ❌ Excluir produto por ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> excluir(@PathVariable Long id) {
+        return repo.findById(id)
+                .map(produto -> {
+                    repo.deleteById(id);
+                    return ResponseEntity.noContent().build();
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

@@ -10,12 +10,16 @@ import {
   filtrarPorCategoria,
   mostrarKits,
   carregarProdutos,
+  excluirProduto // Importa a função de exclusão de produtos
 } from "./produtos.js";
 import { inicializarVendaAvancada } from "./vendas.js"; // lógica de vendas
 import {
   mostrarFuncionarios,
   setupFormularioFuncionario,
 } from "./funcionarios.js";
+
+// Expõe excluirProduto globalmente para uso no onclick do botão na tabela
+window.excluirProduto = excluirProduto;
 
 document.addEventListener("DOMContentLoaded", () => {
   // 🔐 Protege rotas verificando se o usuário está autenticado
