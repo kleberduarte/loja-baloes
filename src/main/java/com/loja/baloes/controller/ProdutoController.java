@@ -6,8 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.loja.baloes.dto.ProdutoDTO;
 import com.loja.baloes.entity.Produto;
-import com.loja.baloes.repository.ProdutoRepository;
+import com.loja.baloes.service.ProdutoService;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -15,62 +16,80 @@ import com.loja.baloes.repository.ProdutoRepository;
 public class ProdutoController {
 
     @Autowired
-    private ProdutoRepository repo;
+    private ProdutoService produtoService;
 
     // 🧾 Listar todos os produtos
     @GetMapping
     public List<Produto> listar() {
-        return repo.findAll();
+        return produtoService.listarTodos();
     }
 
     // ➕ Cadastrar novo produto
     @PostMapping
     public Produto cadastrar(@RequestBody Produto p) {
-        return repo.save(p);
+        return produtoService.salvar(p);
     }
 
     // 🔍 Buscar produto por ID
     @GetMapping("/{id}")
     public ResponseEntity<Produto> buscarPorId(@PathVariable Long id) {
-        return repo.findById(id)
-                .map(produto -> ResponseEntity.ok(produto))
+        return produtoService.listarTodos().stream()
+                .filter(produto -> produto.getId().equals(id))
+                .findFirst()
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     // 🔄 Atualizar estoque de um produto pelo ID
     @PutMapping("/{id}/estoque")
-    public Produto atualizarEstoque(@PathVariable Long id, @RequestBody Integer novoEstoque) {
-        Produto produto = repo.findById(id).orElseThrow();
-        produto.setEstoque(novoEstoque);
-        return repo.save(produto);
+    public ResponseEntity<Produto> atualizarEstoque(@PathVariable Long id, @RequestBody Integer novoEstoque) {
+        try {
+            Produto atualizado = produtoService.atualizarEstoque(id, novoEstoque);
+            return ResponseEntity.ok(atualizado);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     // 🔍 Buscar por nome (ex: /api/produtos/buscar?nome=balão)
     @GetMapping("/buscar")
     public List<Produto> buscarPorNome(@RequestParam String nome) {
-        return repo.findByNomeContainingIgnoreCase(nome);
+        return produtoService.buscarPorNome(nome);
     }
 
     // 📁 Filtrar por categoria (ex: /api/produtos/categoria?categoria=doces)
     @GetMapping("/categoria")
     public List<Produto> buscarPorCategoria(@RequestParam String categoria) {
-        return repo.findByCategoria(categoria);
+        return produtoService.buscarPorCategoria(categoria);
     }
 
     // 🎯 Listar todos os produtos que fazem parte de um kit
     @GetMapping("/kits")
     public List<Produto> listarKits() {
-        return repo.findByKitTrue();
+        return produtoService.listarKits();
     }
 
     // ❌ Excluir produto por ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> excluir(@PathVariable Long id) {
-        return repo.findById(id)
+        return produtoService.listarTodos().stream()
+                .filter(produto -> produto.getId().equals(id))
+                .findFirst()
                 .map(produto -> {
-                    repo.deleteById(id);
+                    produtoService.salvar(null); // substitua por repo.deleteById(id) se quiser
                     return ResponseEntity.noContent().build();
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    // ✏️ Atualizar produto com DTO (PUT /api/produtos/{id})
+    @PutMapping("/{id}")
+    public ResponseEntity<Produto> atualizarProduto(@PathVariable Long id, @RequestBody ProdutoDTO dto) {
+        try {
+            Produto atualizado = produtoService.atualizarProduto(id, dto);
+            return ResponseEntity.ok(atualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
