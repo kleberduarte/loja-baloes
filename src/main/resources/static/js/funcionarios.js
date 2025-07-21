@@ -34,6 +34,11 @@ export async function mostrarFuncionarios() {
         <td>${func.nome}</td>
         <td>${func.cargo}</td>
         <td>${func.usuario?.username || '-'}</td>
+        <td>
+          <button class="btn btn-sm btn-danger" onclick="excluirFuncionario(${func.id})">
+            Excluir
+          </button>
+        </td>
       `;
       tbody.appendChild(tr);
     });
@@ -41,6 +46,32 @@ export async function mostrarFuncionarios() {
   } catch (erro) {
     console.error("Erro ao carregar funcionários:", erro);
     alert("❌ Não foi possível carregar os funcionários.");
+  }
+}
+
+/**
+ * Função para excluir um funcionário pelo ID.
+ */
+export async function excluirFuncionario(id) {
+  if (!confirm("Tem certeza que deseja excluir este funcionário?")) return;
+
+  try {
+    const resposta = await fetch(`${API_URL}/${id}`, {
+      method: "DELETE"
+    });
+
+    if (resposta.status === 204) {
+      alert("✅ Funcionário excluído com sucesso!");
+      mostrarFuncionarios();
+    } else if (resposta.status === 404) {
+      alert("⚠️ Funcionário não encontrado.");
+    } else {
+      const erroTexto = await resposta.text();
+      throw new Error(erroTexto);
+    }
+  } catch (erro) {
+    console.error("Erro ao excluir funcionário:", erro);
+    alert("❌ Erro ao excluir funcionário. Verifique o console.");
   }
 }
 
@@ -115,3 +146,6 @@ export function setupFormularioFuncionario() {
     }
   });
 }
+
+// ✅ Torna a função acessível globalmente para funcionar com onclick no HTML
+window.excluirFuncionario = excluirFuncionario;

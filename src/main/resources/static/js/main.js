@@ -11,17 +11,19 @@ import {
   mostrarKits,
   carregarProdutos,
   excluirProduto,
-  editarProdutoUI // importa a função para abrir edição na UI
+  editarProdutoUI
 } from "./produtos.js";
 import { inicializarVendaAvancada } from "./vendas.js"; // lógica de vendas
 import {
   mostrarFuncionarios,
   setupFormularioFuncionario,
+  excluirFuncionario // ✅ agora importado
 } from "./funcionarios.js";
 
-// Expõe funções globalmente para uso nos botões com onclick
+// ✅ Expõe funções globalmente para uso em onclick no HTML
 window.excluirProduto = excluirProduto;
 window.editarProdutoUI = editarProdutoUI;
+window.excluirFuncionario = excluirFuncionario; // ✅ corrigido
 
 document.addEventListener("DOMContentLoaded", () => {
   // 🔐 Protege rotas verificando se o usuário está autenticado
@@ -42,7 +44,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const vendaSection = document.getElementById("vendaSection");
   const funcionarioSection = document.getElementById("funcionarioSection");
 
-  // 🔍 Log para verificar quais seções foram encontradas
   console.log("Seções encontradas:", {
     produtoSection,
     vendaSection,
@@ -58,8 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Função para alternar entre seções
   function mostrarSecao(idSecao, callback, menuId) {
     console.log(`🔄 Alternando para seção: ${idSecao}`);
-    esconderTodas(); // esconde todas as seções visíveis
-    destacarMenu(menuId); // destaca o menu ativo
+    esconderTodas();
+    destacarMenu(menuId);
 
     const secao = document.getElementById(idSecao);
     if (secao) {
@@ -74,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 🧃 Função para adicionar eventos dos filtros na seção produtos
+  // Adiciona eventos de filtro da seção produtos
   function adicionarEventosFiltros() {
     const btnBuscarNome = document.getElementById("btnBuscarNome");
     const btnBuscarCategoria = document.getElementById("btnBuscarCategoria");
@@ -108,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  // 🎯 Eventos de navegação do menu
+  // Eventos de navegação
   linkProdutos?.addEventListener("click", (e) => {
     e.preventDefault();
     console.log("📌 Produtos clicado");
@@ -116,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
       mostrarProdutos();
       setupFormularioProduto();
 
-      // Espera botão de kits estar disponível para adicionar os eventos
+      // Espera botão de kits estar presente
       const esperaBotaoKits = setInterval(() => {
         if (document.getElementById("btnMostrarKits")) {
           adicionarEventosFiltros();
@@ -136,14 +137,10 @@ document.addEventListener("DOMContentLoaded", () => {
   linkFuncionarios?.addEventListener("click", (e) => {
     e.preventDefault();
     console.log("📌 Funcionários clicado");
-    mostrarSecao(
-      "funcionarioSection",
-      () => {
-        mostrarFuncionarios();
-        setupFormularioFuncionario();
-      },
-      "linkFuncionarios"
-    );
+    mostrarSecao("funcionarioSection", () => {
+      mostrarFuncionarios();
+      setupFormularioFuncionario();
+    }, "linkFuncionarios");
   });
 
   btnLogout?.addEventListener("click", (e) => {
@@ -152,13 +149,13 @@ document.addEventListener("DOMContentLoaded", () => {
     logout();
   });
 
-  // 🧾 Inicializa formulários se a seção estiver presente na página
+  // Inicializa seções já visíveis no carregamento
   if (document.getElementById("formProduto")) {
     console.log("🧾 Formulário de produtos detectado — inicializando");
     setupFormularioProduto();
   }
 
-  // 🚀 Define a seção padrão visível, priorizando vendaSection
+  // Seção padrão ao carregar página
   if (vendaSection) {
     mostrarSecao("vendaSection", inicializarVendaAvancada, "linkVendas");
   } else if (funcionarioSection) {
