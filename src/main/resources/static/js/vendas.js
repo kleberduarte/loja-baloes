@@ -111,7 +111,10 @@ export function inicializarVendaAvancada() {
         body: JSON.stringify({ itens: itensVenda })
       });
 
-      if (!res.ok) throw new Error("Erro ao registrar venda.");
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Erro ao registrar venda.");
+      }
 
       showAlert(`Venda registrada com sucesso! Total: R$ ${totalVenda.toFixed(2)}`, "success");
       console.log("✅ Venda registrada:", itensVenda);
@@ -120,13 +123,25 @@ export function inicializarVendaAvancada() {
       totalVenda = 0;
       totalVendaSpan.innerText = "0.00";
 
+      // Recarrega a página após 5 segundos
       setTimeout(() => {
         location.reload();
       }, 5000);
 
     } catch (error) {
       console.error("❌ Erro ao finalizar venda:", error);
-      showAlert("Erro ao registrar venda.", "danger");
+      showAlert(error.message, "danger");
+
+      // Limpa interface mesmo com erro
+      totalVenda = 0;
+      totalVendaSpan.innerText = "0.00";
+      document.getElementById("formVenda").reset();
+      ["vendaNome", "vendaPreco", "vendaDescricao", "vendaCategoria", "vendaKit", "totalItem"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+      document.getElementById("tabelaItens").innerHTML = "";
+      itensVenda.length = 0;
     }
   });
 }
