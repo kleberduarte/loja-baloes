@@ -16,39 +16,44 @@ public class ProdutoService {
     @Autowired
     private ProdutoRepository repo;
 
-    // 🧾 Listar todos os produtos
+    // Listar todos os produtos
     public List<Produto> listarTodos() {
         return repo.findAll();
     }
 
-    // ➕ Cadastrar novo produto
+    // Salvar produto (novo ou update)
     public Produto salvar(Produto p) {
         return repo.save(p);
     }
 
-    // 🔄 Atualizar estoque diretamente por ID
+    // Atualizar estoque por ID
     public Produto atualizarEstoque(Long id, Integer novoEstoque) {
-        Produto p = repo.findById(id).orElseThrow();
+        Produto p = repo.findById(id).orElseThrow(() -> new RuntimeException("Produto não encontrado."));
         p.setEstoque(novoEstoque);
         return repo.save(p);
     }
 
-    // 🔍 Buscar por nome (ex: "kit de doces")
+    // Buscar produtos por nome (parcial, case-insensitive)
     public List<Produto> buscarPorNome(String nome) {
         return repo.findByNomeContainingIgnoreCase(nome);
     }
 
-    // 📁 Buscar por categoria (ex: "doces")
+    // Buscar produto por código exato
+    public Optional<Produto> buscarPorCodigo(String codigo) {
+        return repo.findByCodigo(codigo);
+    }
+
+    // Buscar produtos por categoria exata
     public List<Produto> buscarPorCategoria(String categoria) {
         return repo.findByCategoria(categoria);
     }
 
-    // 🎯 Listar todos os produtos que fazem parte de um kit
+    // Listar produtos que são kits
     public List<Produto> listarKits() {
         return repo.findByKitTrue();
     }
 
-    // ✏️ Atualizar produto completo/parcialmente via DTO
+    // Atualizar produto parcialmente via DTO
     public Produto atualizarProduto(Long id, ProdutoDTO dto) {
         Optional<Produto> optionalProduto = repo.findById(id);
 
@@ -68,7 +73,7 @@ public class ProdutoService {
         return repo.save(produto);
     }
 
-    // ❌ Excluir produto por ID
+    // Excluir produto por ID
     public void excluir(Long id) {
         repo.deleteById(id);
     }

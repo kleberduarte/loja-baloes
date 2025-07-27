@@ -4,20 +4,15 @@
     <meta charset="UTF-8" />
     <title>Sistema | Loja de Balões</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- ✅ Bootstrap 5 para estilos e layout responsivo -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body class="bg-light">
 
-<!-- ✅ Container principal do sistema -->
 <div class="container mt-4">
-    <!-- ✅ Área para exibir alertas dinâmicos -->
     <div id="alertArea" class="alert d-none" role="alert"></div>
 
-    <!-- ✅ Título principal do sistema -->
     <h2 class="text-center text-primary mb-4">🎈 Loja de Balões — Sistema</h2>
 
-    <!-- 🔗 Menu de navegação superior -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
         <div class="container">
             <a class="navbar-brand text-primary" href="sistema.html">Loja de Balões</a>
@@ -26,7 +21,6 @@
             </button>
             <div class="collapse navbar-collapse" id="menuSistema">
                 <ul class="navbar-nav ms-auto">
-                    <!-- Links do menu -->
                     <li class="nav-item"><a id="linkProdutos" class="nav-link" href="#">Produtos</a></li>
                     <li class="nav-item"><a id="linkVendas" class="nav-link" href="#">Vendas</a></li>
                     <li class="nav-item"><a id="linkFuncionarios" class="nav-link" href="#">Funcionários</a></li>
@@ -40,15 +34,15 @@
     <section id="produtoSection" style="display: none;">
         <h4 class="text-primary mb-3">Cadastro de Produtos</h4>
 
-        <!-- 🔍 Filtros e ações -->
         <div class="card p-3 shadow-sm mb-4">
             <div class="row g-2">
-                <!-- Campo de busca por nome -->
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <input type="text" id="filtroCodigo" class="form-control" placeholder="Buscar por código" />
+                </div>
+                <div class="col-md-3">
                     <input type="text" id="filtroNome" class="form-control" placeholder="Buscar por nome" />
                 </div>
-                <!-- Campo de filtro por categoria -->
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <select id="filtroCategoria" class="form-select">
                         <option value="">Filtrar por categoria</option>
                         <option value="balão">Balão</option>
@@ -56,8 +50,8 @@
                         <option value="doces">Doces</option>
                     </select>
                 </div>
-                <!-- Botões de ação -->
-                <div class="col-md-4 d-grid gap-2">
+                <div class="col-md-3 d-grid gap-2">
+                    <button class="btn btn-outline-primary" id="btnBuscarCodigo">🔍 Buscar Código</button>
                     <button class="btn btn-outline-primary" id="btnBuscarNome">🔍 Buscar</button>
                     <button class="btn btn-outline-secondary" id="btnBuscarCategoria">📁 Categoria</button>
                     <button class="btn btn-outline-success" id="btnMostrarKits">🎯 Ver Kits</button>
@@ -66,8 +60,8 @@
             </div>
         </div>
 
-        <!-- 📝 Formulário de cadastro de produtos -->
         <form id="formProduto" class="card p-3 shadow-sm mb-4">
+            <input type="number" id="produtoIdCadastro" placeholder="Código do Produto" class="form-control mb-2" required />
             <input type="text" id="produtoNome" placeholder="Nome" class="form-control mb-2" required />
             <input type="text" id="produtoDescricao" placeholder="Descrição" class="form-control mb-2" required />
             <input type="number" id="produtoPreco" placeholder="Preço (R$)" class="form-control mb-2" required />
@@ -80,12 +74,11 @@
             <button type="submit" class="btn btn-success w-100">Cadastrar Produto</button>
         </form>
 
-        <!-- 🧾 Tabela de produtos com cabeçalho e corpo -->
         <div class="table-responsive">
             <table class="table table-bordered table-striped shadow-sm">
                 <thead class="table-light">
                 <tr>
-                    <th>ID</th>
+                    <th>Código do Produto</th>
                     <th>Nome</th>
                     <th>Descrição</th>
                     <th>Preço</th>
@@ -95,9 +88,7 @@
                     <th>Ações</th>
                 </tr>
                 </thead>
-                <tbody id="listaProdutos">
-                <!-- Conteúdo será inserido via JavaScript -->
-                </tbody>
+                <tbody id="listaProdutos"></tbody>
             </table>
         </div>
     </section>
@@ -106,11 +97,10 @@
     <section id="vendaSection" style="display: none;">
         <h4 class="text-success mb-3">Registrar Venda</h4>
 
-        <!-- Formulário de venda -->
         <form id="formVenda" class="card p-4 shadow-sm mb-4">
             <div class="row g-3">
                 <div class="col-md-3">
-                    <label for="produtoId" class="form-label">ID do Produto</label>
+                    <label for="produtoId" class="form-label">Código do Produto</label>
                     <input type="number" id="produtoId" class="form-control" required />
                 </div>
                 <div class="col-md-3">
@@ -149,7 +139,6 @@
             <button type="submit" class="btn btn-success mt-4 w-100">Adicionar Item</button>
         </form>
 
-        <!-- 🧾 Tabela de itens da venda -->
         <table class="table table-bordered">
             <thead>
             <tr>
@@ -162,12 +151,10 @@
             <tbody id="tabelaItens"></tbody>
         </table>
 
-        <!-- 💵 Total da venda -->
         <div class="text-end mb-3">
             <strong>Valor Total: R$ <span id="totalVenda">0.00</span></strong>
         </div>
 
-        <!-- Botão para finalizar a venda -->
         <button id="finalizarVenda" class="btn btn-primary mt-3 w-100">Finalizar Venda</button>
     </section>
 
@@ -182,12 +169,10 @@
             <button type="submit" class="btn btn-warning w-100">Cadastrar Funcionário</button>
         </form>
 
-        <!-- 🧾 Tabela de funcionários -->
         <table class="table table-bordered" id="listaFuncionarios"></table>
     </section>
 </div>
 
-<!-- 🔗 Scripts JavaScript -->
 <script type="module" src="./js/main.js"></script>
 <script src="./js/funcionarios.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

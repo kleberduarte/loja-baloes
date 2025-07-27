@@ -1,8 +1,7 @@
 // main.js
 
-// 📦 Importações de módulos usados na aplicação
-import { checkLoginRedirect, setupLoginForm, logout } from "./auth.js"; // autenticação
-import { showAlert, esconderTodas, destacarMenu } from "./ui.js"; // utilitários de interface
+import { checkLoginRedirect, setupLoginForm, logout } from "./auth.js";
+import { showAlert, esconderTodas, destacarMenu } from "./ui.js";
 import {
   mostrarProdutos,
   setupFormularioProduto,
@@ -11,35 +10,107 @@ import {
   mostrarKits,
   carregarProdutos,
   excluirProduto,
-  editarProdutoUI
+  editarProdutoUI,
+  buscarPorCodigo
 } from "./produtos.js";
-import { inicializarVendaAvancada } from "./vendas.js"; // lógica de vendas
+import { inicializarVendaAvancada } from "./vendas.js";
 import {
   mostrarFuncionarios,
   setupFormularioFuncionario,
-  excluirFuncionario // ✅ agora importado
+  excluirFuncionario
 } from "./funcionarios.js";
 
-// ✅ Expõe funções globalmente para uso em onclick no HTML
 window.excluirProduto = excluirProduto;
 window.editarProdutoUI = editarProdutoUI;
-window.excluirFuncionario = excluirFuncionario; // ✅ corrigido
+window.excluirFuncionario = excluirFuncionario;
+
+let eventosFiltrosAdicionados = false;
+
+function aguardarElemento(selector, callback, timeout = 5000) {
+  const el = document.querySelector(selector);
+  if (el) {
+    callback(el);
+    return;
+  }
+  const observer = new MutationObserver(() => {
+    const el = document.querySelector(selector);
+    if (el) {
+      callback(el);
+      observer.disconnect();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  if (timeout > 0) {
+    setTimeout(() => observer.disconnect(), timeout);
+  }
+}
+
+function adicionarEventosFiltros() {
+  if (eventosFiltrosAdicionados) return;
+  eventosFiltrosAdicionados = true;
+
+  const btnBuscarNome = document.getElementById("btnBuscarNome");
+  const btnBuscarCategoria = document.getElementById("btnBuscarCategoria");
+  const btnBuscarCodigo = document.getElementById("btnBuscarCodigo");
+  const btnVerKits = document.getElementById("btnMostrarKits");
+  const btnTodos = document.getElementById("btnTodosProdutos");
+
+  if (btnBuscarNome)
+    btnBuscarNome.addEventListener("click", () => filtrarPorNome());
+
+  if (btnBuscarCategoria)
+    btnBuscarCategoria.addEventListener("click", () => filtrarPorCategoria());
+
+  if (btnBuscarCodigo)
+    btnBuscarCodigo.addEventListener("click", () => {
+      console.log("🔎 Busca por código acionada");
+      buscarPorCodigo();
+    });
+
+  if (btnVerKits)
+    btnVerKits.addEventListener("click", () => {
+      console.log("🔍 Botão 'Ver Kits' clicado");
+      mostrarKits();
+    });
+
+  if (btnTodos)
+    btnTodos.addEventListener("click", () => {
+      console.log("🧃 Botão 'Todos os Produtos' clicado");
+      carregarProdutos();
+    });
+}
+
+function mostrarSecao(idSecao, callback, menuId) {
+  console.log(`🔄 Alternando para seção: ${idSecao}`);
+  esconderTodas();
+  destacarMenu(menuId);
+
+  const secao = document.getElementById(idSecao);
+  if (secao) {
+    secao.style.display = "block";
+    console.log(`✅ Seção ${idSecao} exibida`);
+    if (typeof callback === "function") {
+      console.log(`📦 Executando lógica da seção: ${idSecao}`);
+      callback();
+    }
+  } else {
+    console.warn(`⚠️ Seção ${idSecao} não encontrada`);
+  }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 🔐 Protege rotas verificando se o usuário está autenticado
   checkLoginRedirect();
 
-  const path = window.location.pathname;
-  console.log("📄 Caminho atual:", path);
+  const currentPage = window.location.pathname.split("/").pop();
+  console.log("📄 Página atual:", currentPage);
 
-  // 🔐 Se estiver na tela de login, inicializa apenas o formulário
-  if (path.includes("login.html")) {
+  if (currentPage === "login.html") {
     console.log("🧭 Página de login detectada");
     setupLoginForm(showAlert);
     return;
   }
 
-  // Referências das seções
   const produtoSection = document.getElementById("produtoSection");
   const vendaSection = document.getElementById("vendaSection");
   const funcionarioSection = document.getElementById("funcionarioSection");
@@ -50,81 +121,21 @@ document.addEventListener("DOMContentLoaded", () => {
     funcionarioSection,
   });
 
-  // Referências dos links de menu
   const linkProdutos = document.getElementById("linkProdutos");
   const linkVendas = document.getElementById("linkVendas");
   const linkFuncionarios = document.getElementById("linkFuncionarios");
   const btnLogout = document.getElementById("btnLogout");
 
-  // Função para alternar entre seções
-  function mostrarSecao(idSecao, callback, menuId) {
-    console.log(`🔄 Alternando para seção: ${idSecao}`);
-    esconderTodas();
-    destacarMenu(menuId);
-
-    const secao = document.getElementById(idSecao);
-    if (secao) {
-      secao.style.display = "block";
-      console.log(`✅ Seção ${idSecao} exibida`);
-      if (typeof callback === "function") {
-        console.log(`📦 Executando lógica da seção: ${idSecao}`);
-        callback();
-      }
-    } else {
-      console.warn(`⚠️ Seção ${idSecao} não encontrada`);
-    }
-  }
-
-  // Adiciona eventos de filtro da seção produtos
-  function adicionarEventosFiltros() {
-    const btnBuscarNome = document.getElementById("btnBuscarNome");
-    const btnBuscarCategoria = document.getElementById("btnBuscarCategoria");
-    const btnVerKits = document.getElementById("btnMostrarKits");
-    const btnTodos = document.getElementById("btnTodosProdutos");
-
-    if (btnBuscarNome)
-      btnBuscarNome.addEventListener("click", (e) => {
-        e.preventDefault();
-        filtrarPorNome();
-      });
-
-    if (btnBuscarCategoria)
-      btnBuscarCategoria.addEventListener("click", (e) => {
-        e.preventDefault();
-        filtrarPorCategoria();
-      });
-
-    if (btnVerKits)
-      btnVerKits.addEventListener("click", (e) => {
-        e.preventDefault();
-        console.log("🔍 Botão 'Ver Kits' clicado");
-        mostrarKits();
-      });
-
-    if (btnTodos)
-      btnTodos.addEventListener("click", (e) => {
-        e.preventDefault();
-        console.log("🧃 Botão 'Todos os Produtos' clicado");
-        carregarProdutos();
-      });
-  }
-
-  // Eventos de navegação
   linkProdutos?.addEventListener("click", (e) => {
     e.preventDefault();
     console.log("📌 Produtos clicado");
     mostrarSecao("produtoSection", () => {
       mostrarProdutos();
       setupFormularioProduto();
-
-      // Espera botão de kits estar presente
-      const esperaBotaoKits = setInterval(() => {
-        if (document.getElementById("btnMostrarKits")) {
-          adicionarEventosFiltros();
-          clearInterval(esperaBotaoKits);
-          console.log("✅ Eventos dos filtros adicionados com sucesso.");
-        }
-      }, 100);
+      aguardarElemento("#btnMostrarKits", () => {
+        adicionarEventosFiltros();
+        console.log("✅ Eventos dos filtros adicionados com sucesso.");
+      });
     }, "linkProdutos");
   });
 
@@ -149,13 +160,11 @@ document.addEventListener("DOMContentLoaded", () => {
     logout();
   });
 
-  // Inicializa seções já visíveis no carregamento
   if (document.getElementById("formProduto")) {
     console.log("🧾 Formulário de produtos detectado — inicializando");
     setupFormularioProduto();
   }
 
-  // Seção padrão ao carregar página
   if (vendaSection) {
     mostrarSecao("vendaSection", inicializarVendaAvancada, "linkVendas");
   } else if (funcionarioSection) {
@@ -167,9 +176,10 @@ document.addEventListener("DOMContentLoaded", () => {
     mostrarSecao("produtoSection", () => {
       mostrarProdutos();
       setupFormularioProduto();
-      setTimeout(() => {
+      aguardarElemento("#btnMostrarKits", () => {
         adicionarEventosFiltros();
-      }, 300);
+        console.log("✅ Eventos dos filtros adicionados com sucesso.");
+      });
     }, "linkProdutos");
   }
 });

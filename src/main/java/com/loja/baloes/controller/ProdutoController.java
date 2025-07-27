@@ -1,6 +1,7 @@
 package com.loja.baloes.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,29 +19,39 @@ public class ProdutoController {
     @Autowired
     private ProdutoService produtoService;
 
-    // 🧾 Listar todos os produtos
+    // Listar todos os produtos
     @GetMapping
     public List<Produto> listar() {
         return produtoService.listarTodos();
     }
 
-    // ➕ Cadastrar novo produto
+    // Cadastrar novo produto
     @PostMapping
-    public Produto cadastrar(@RequestBody Produto p) {
-        return produtoService.salvar(p);
+    public ResponseEntity<Produto> cadastrar(@RequestBody Produto p) {
+        Produto salvo = produtoService.salvar(p);
+        return ResponseEntity.ok(salvo);
     }
 
-    // 🔍 Buscar produto por ID
+    // Buscar produto por ID
     @GetMapping("/{id}")
     public ResponseEntity<Produto> buscarPorId(@PathVariable Long id) {
-        return produtoService.listarTodos().stream()
-                .filter(produto -> produto.getId().equals(id))
-                .findFirst()
-                .map(ResponseEntity::ok)
+        Optional<Produto> produto = produtoService.listarTodos().stream()
+                .filter(p -> p.getId().equals(id))
+                .findFirst();
+        return produto.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 🔄 Atualizar estoque de um produto pelo ID
+    // Buscar produto por CÓDIGO
+    @GetMapping("/codigo/{codigo}")
+    public ResponseEntity<Produto> buscarPorCodigo(@PathVariable String codigo) {
+        Optional<Produto> produto = produtoService.buscarPorCodigo(codigo);
+        return produto.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // Atualizar estoque de um produto pelo ID
+    // ⚠️ Atenção: espera um corpo do tipo Integer (não comum) — pode causar problemas no frontend
     @PutMapping("/{id}/estoque")
     public ResponseEntity<Produto> atualizarEstoque(@PathVariable Long id, @RequestBody Integer novoEstoque) {
         try {
@@ -51,38 +62,39 @@ public class ProdutoController {
         }
     }
 
-    // 🔍 Buscar por nome (ex: /api/produtos/buscar?nome=balão)
+    // Buscar produtos por nome (query param)
     @GetMapping("/buscar")
     public List<Produto> buscarPorNome(@RequestParam String nome) {
         return produtoService.buscarPorNome(nome);
     }
 
-    // 📁 Filtrar por categoria (ex: /api/produtos/categoria?categoria=doces)
+    // Filtrar por categoria (query param)
     @GetMapping("/categoria")
     public List<Produto> buscarPorCategoria(@RequestParam String categoria) {
         return produtoService.buscarPorCategoria(categoria);
     }
 
-    // 🎯 Listar todos os produtos que fazem parte de um kit
+    // Listar produtos que são kits
     @GetMapping("/kits")
     public List<Produto> listarKits() {
         return produtoService.listarKits();
     }
 
+    // Excluir produto por ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> excluir(@PathVariable Long id) {
-        return produtoService.listarTodos().stream()
-                .filter(produto -> produto.getId().equals(id))
-                .findFirst()
-                .map(produto -> {
-                    produtoService.excluir(id); // ✅ Corrigido: chama o método que realmente exclui
-                    return ResponseEntity.noContent().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+        Optional<Produto> produto = produtoService.listarTodos().stream()
+                .filter(p -> p.getId().equals(id))
+                .findFirst();
+
+        if (produto.isPresent()) {
+            produtoService.excluir(id);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
-
-    // ✏️ Atualizar produto com DTO (PUT /api/produtos/{id})
+    // Atualizar produto com DTO (PUT /api/produtos/{id})
     @PutMapping("/{id}")
     public ResponseEntity<Produto> atualizarProduto(@PathVariable Long id, @RequestBody ProdutoDTO dto) {
         try {

@@ -2,41 +2,106 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Vendas | Loja de Balões</title>
+  <title>Sistema | Loja de Balões</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body class="bg-light">
 
-<div class="container">
-  <!-- 🔗 Menu -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 mt-3">
+<div class="container mt-4">
+  <div id="alertArea" class="alert d-none" role="alert"></div>
+
+  <h2 class="text-center text-primary mb-4">🎈 Loja de Balões — Sistema</h2>
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
     <div class="container">
-      <a class="navbar-brand text-primary" href="vendas.html">Loja de Balões</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuLoja">
+      <a class="navbar-brand text-primary" href="sistema.html">Loja de Balões</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuSistema">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="collapse navbar-collapse" id="menuLoja">
+      <div class="collapse navbar-collapse" id="menuSistema">
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="produtos.html">Produtos</a></li>
-          <li class="nav-item"><a class="nav-link active fw-bold text-primary" href="vendas.html">Vendas</a></li>
-          <li class="nav-item"><a class="nav-link" href="funcionarios.html">Funcionários</a></li>
-          <li class="nav-item"><a class="nav-link text-danger" href="#" id="btnLogout">Sair</a></li>
+          <li class="nav-item"><a id="linkProdutos" class="nav-link" href="#">Produtos</a></li>
+          <li class="nav-item"><a id="linkVendas" class="nav-link" href="#">Vendas</a></li>
+          <li class="nav-item"><a id="linkFuncionarios" class="nav-link" href="#">Funcionários</a></li>
+          <li class="nav-item"><a id="btnLogout" class="nav-link text-danger" href="#">Sair</a></li>
         </ul>
       </div>
     </div>
   </nav>
 
-  <!-- 💰 Conteúdo -->
-  <section id="vendaSection">
-    <h3 class="text-primary mb-4 text-center">Registrar Venda</h3>
+  <!-- 📦 Seção de Produtos -->
+  <section id="produtoSection" style="display: none;">
+    <h4 class="text-primary mb-3">Cadastro de Produtos</h4>
 
-    <!-- 🧾 Formulário de venda -->
+    <div class="card p-3 shadow-sm mb-4">
+      <div class="row g-2">
+        <div class="col-md-3">
+          <input type="text" id="filtroCodigo" class="form-control" placeholder="Buscar por código" />
+        </div>
+        <div class="col-md-3">
+          <input type="text" id="filtroNome" class="form-control" placeholder="Buscar por nome" />
+        </div>
+        <div class="col-md-3">
+          <select id="filtroCategoria" class="form-select">
+            <option value="">Filtrar por categoria</option>
+            <option value="balão">Balão</option>
+            <option value="kit">Kit</option>
+            <option value="doces">Doces</option>
+          </select>
+        </div>
+        <div class="col-md-3 d-grid gap-2">
+          <button class="btn btn-outline-primary" id="btnBuscarCodigo">🔍 Buscar Código</button>
+          <button class="btn btn-outline-primary" id="btnBuscarNome">🔍 Buscar</button>
+          <button class="btn btn-outline-secondary" id="btnBuscarCategoria">📁 Categoria</button>
+          <button class="btn btn-outline-success" id="btnMostrarKits">🎯 Ver Kits</button>
+          <button class="btn btn-outline-dark" id="btnTodosProdutos">↻ Todos</button>
+        </div>
+      </div>
+    </div>
+
+    <form id="formProduto" class="card p-3 shadow-sm mb-4">
+      <input type="number" id="produtoIdCadastro" placeholder="Código do Produto" class="form-control mb-2" required />
+      <input type="text" id="produtoNome" placeholder="Nome" class="form-control mb-2" required />
+      <input type="text" id="produtoDescricao" placeholder="Descrição" class="form-control mb-2" required />
+      <input type="number" id="produtoPreco" placeholder="Preço (R$)" class="form-control mb-2" required />
+      <input type="number" id="produtoEstoque" placeholder="Estoque" class="form-control mb-2" required />
+      <input type="text" id="produtoCategoria" placeholder="Categoria (ex: kit, balão, doces)" class="form-control mb-2" />
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" id="produtoKit" />
+        <label class="form-check-label" for="produtoKit">Faz parte de um kit?</label>
+      </div>
+      <button type="submit" class="btn btn-success w-100">Cadastrar Produto</button>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped shadow-sm">
+        <thead class="table-light">
+        <tr>
+          <th>Código do Produto</th>
+          <th>Nome</th>
+          <th>Descrição</th>
+          <th>Preço</th>
+          <th>Estoque</th>
+          <th>Categoria</th>
+          <th>Kit</th>
+          <th>Ações</th>
+        </tr>
+        </thead>
+        <tbody id="listaProdutos"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 💰 Seção de Vendas -->
+  <section id="vendaSection" style="display: none;">
+    <h4 class="text-success mb-3">Registrar Venda</h4>
+
     <form id="formVenda" class="card p-4 shadow-sm mb-4">
       <div class="row g-3">
         <div class="col-md-3">
-          <label for="produtoId" class="form-label">ID do Produto</label>
-          <input type="number" id="produtoId" class="form-control" required />
+          <label for="produtoId" class="form-label">Código do Produto</label>
+          <input type="text" id="produtoId" class="form-control" required />
         </div>
         <div class="col-md-3">
           <label for="vendaNome" class="form-label">Nome</label>
@@ -74,42 +139,43 @@
       <button type="submit" class="btn btn-success mt-4 w-100">Adicionar Item</button>
     </form>
 
-    <!-- 📋 Tabela de itens -->
-    <div class="table-responsive">
-      <table class="table table-bordered">
-        <thead class="table-light">
-        <tr>
-          <th>Produto</th>
-          <th>Qtd</th>
-          <th>Valor Unitário</th>
-          <th>Total</th>
-        </tr>
-        </thead>
-        <tbody id="tabelaItens"></tbody>
-      </table>
-    </div>
+    <table class="table table-bordered">
+      <thead>
+      <tr>
+        <th>Produto</th>
+        <th>Qtd</th>
+        <th>Valor Unitário</th>
+        <th>Total</th>
+      </tr>
+      </thead>
+      <tbody id="tabelaItens"></tbody>
+    </table>
 
-    <!-- Total geral da venda (opcional visualmente) -->
     <div class="text-end mb-3">
       <strong>Valor Total: R$ <span id="totalVenda">0.00</span></strong>
     </div>
 
-    <button id="finalizarVenda" class="btn btn-primary w-100">Finalizar Venda</button>
+    <button id="finalizarVenda" class="btn btn-primary mt-3 w-100">Finalizar Venda</button>
+  </section>
+
+  <!-- 👷 Seção de Funcionários -->
+  <section id="funcionarioSection" style="display: none;">
+    <h4 class="text-warning mb-3">Cadastro de Funcionários</h4>
+    <form id="formFuncionario" class="card p-3 shadow-sm mb-4">
+      <input type="text" id="nomeFunc" placeholder="Nome do Funcionário" class="form-control mb-2" required />
+      <input type="text" id="cargo" placeholder="Cargo" class="form-control mb-2" required />
+      <input type="text" id="usernameFunc" placeholder="Usuário (opcional)" class="form-control mb-2" />
+      <input type="password" id="passwordFunc" placeholder="Senha (opcional)" class="form-control mb-2" />
+      <button type="submit" class="btn btn-warning w-100">Cadastrar Funcionário</button>
+    </form>
+
+    <table class="table table-bordered" id="listaFuncionarios"></table>
   </section>
 </div>
 
-<!-- 💬 Toast para alertas -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-  <div id="toast" class="toast align-items-center text-white bg-success border-0" role="alert">
-    <div class="d-flex">
-      <div class="toast-body" id="toastMessage">Sucesso!</div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-    </div>
-  </div>
-</div>
-
-<!-- 🔗 Scripts -->
-<script type="module" src="/js/main.js"></script>
+<script type="module" src="./js/main.js"></script>
+<script src="./js/funcionarios.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

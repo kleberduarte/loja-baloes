@@ -19,13 +19,14 @@ export function inicializarVendaAvancada() {
 
   console.log("✅ inicializarVendaAvancada() iniciada");
 
-  // 🔄 Evento: carregar dados do produto ao selecionar o ID
+  // 🔄 Evento: carregar dados do produto ao selecionar o código
   document.getElementById("produtoId")?.addEventListener("change", async function () {
-    const id = this.value;
-    console.log("🔍 Produto selecionado:", id);
+    const codigo = this.value;  // Código inserido no campo
+
+    console.log("🔍 Produto selecionado:", codigo);
 
     try {
-      const res = await fetch(`${API_URL}/api/produtos/${id}`, {
+      const res = await fetch(`${API_URL}/api/produtos/codigo/${codigo}`, {
         headers: authenticatedHeaders(),
       });
 
@@ -40,6 +41,8 @@ export function inicializarVendaAvancada() {
       document.getElementById("vendaCategoria").value = p.categoria;
       document.getElementById("vendaKit").value = p.kit ? "Sim" : "Não";
 
+      // Armazenando o ID do produto para usar ao finalizar a venda
+      document.getElementById("produtoId").dataset.produtoId = p.id;  // ID do produto armazenado
     } catch (error) {
       showAlert("Produto não encontrado", "warning");
       console.error("❌ Erro ao buscar produto:", error);
@@ -57,7 +60,7 @@ export function inicializarVendaAvancada() {
   document.getElementById("formVenda")?.addEventListener("submit", function (e) {
     e.preventDefault();
 
-    const produtoId = parseInt(document.getElementById("produtoId").value);
+    const produtoId = document.getElementById("produtoId").dataset.produtoId; // Usando o ID do produto
     const nome = document.getElementById("vendaNome").value;
     const preco = parseFloat(document.getElementById("vendaPreco").value.replace(",", "."));
     const qtd = parseInt(document.getElementById("quantidade").value);
@@ -102,13 +105,21 @@ export function inicializarVendaAvancada() {
     }
 
     try {
+      // Enviando o ID do produto (não o código) para registrar a venda
       const res = await fetch(`${API_URL}/api/vendas`, {
         method: "POST",
         headers: {
           ...authenticatedHeaders(),
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ itens: itensVenda })
+        body: JSON.stringify({
+          itens: itensVenda.map(item => {
+            return {
+              produtoId: item.produtoId,  // Usando o ID do produto aqui
+              quantidade: item.quantidade
+            };
+          })
+        })
       });
 
       if (!res.ok) {
