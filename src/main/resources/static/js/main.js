@@ -1,31 +1,30 @@
-// main.js
-
 import { checkLoginRedirect, setupLoginForm, logout } from "./auth.js";
 import { showAlert, esconderTodas, destacarMenu } from "./ui.js";
 import {
   mostrarProdutos,
   setupFormularioProduto,
-  filtrarPorNome,
+  carregarProdutos,
   filtrarPorCategoria,
   mostrarKits,
-  carregarProdutos,
   excluirProduto,
-  editarProdutoUI,
-  buscarPorCodigo
+  preencherFormularioParaEdicao,
+  buscarPorCodigoOuNome,
 } from "./produtos.js";
 import { inicializarVendaAvancada } from "./vendas.js";
 import {
   mostrarFuncionarios,
   setupFormularioFuncionario,
-  excluirFuncionario
+  excluirFuncionario,
 } from "./funcionarios.js";
 
+// Expor funções globais para uso no HTML (botões dinâmicos, etc)
 window.excluirProduto = excluirProduto;
-window.editarProdutoUI = editarProdutoUI;
+window.preencherFormularioParaEdicao = preencherFormularioParaEdicao;
 window.excluirFuncionario = excluirFuncionario;
 
 let eventosFiltrosAdicionados = false;
 
+// Função que aguarda a presença de um elemento no DOM
 function aguardarElemento(selector, callback, timeout = 5000) {
   const el = document.querySelector(selector);
   if (el) {
@@ -46,41 +45,26 @@ function aguardarElemento(selector, callback, timeout = 5000) {
   }
 }
 
+// Adiciona os eventos aos botões de filtros
 function adicionarEventosFiltros() {
   if (eventosFiltrosAdicionados) return;
   eventosFiltrosAdicionados = true;
 
-  const btnBuscarNome = document.getElementById("btnBuscarNome");
+  const btnBuscarCodigoNome = document.getElementById("btnBuscarCodigoNome");
   const btnBuscarCategoria = document.getElementById("btnBuscarCategoria");
   const btnBuscarCodigo = document.getElementById("btnBuscarCodigo");
   const btnVerKits = document.getElementById("btnMostrarKits");
   const btnTodos = document.getElementById("btnTodosProdutos");
 
-  if (btnBuscarNome)
-    btnBuscarNome.addEventListener("click", () => filtrarPorNome());
-
-  if (btnBuscarCategoria)
-    btnBuscarCategoria.addEventListener("click", () => filtrarPorCategoria());
-
-  if (btnBuscarCodigo)
-    btnBuscarCodigo.addEventListener("click", () => {
-      console.log("🔎 Busca por código acionada");
-      buscarPorCodigo();
-    });
-
-  if (btnVerKits)
-    btnVerKits.addEventListener("click", () => {
-      console.log("🔍 Botão 'Ver Kits' clicado");
-      mostrarKits();
-    });
-
-  if (btnTodos)
-    btnTodos.addEventListener("click", () => {
-      console.log("🧃 Botão 'Todos os Produtos' clicado");
-      carregarProdutos();
-    });
+  // Chamando a função buscarPorCodigoOuNome para o botão de busca
+  if (btnBuscarCodigoNome) btnBuscarCodigoNome.addEventListener("click", buscarPorCodigoOuNome);
+  if (btnBuscarCategoria) btnBuscarCategoria.addEventListener("click", filtrarPorCategoria);
+  if (btnBuscarCodigo) btnBuscarCodigo.addEventListener("click", buscarPorCodigo);
+  if (btnVerKits) btnVerKits.addEventListener("click", mostrarKits);
+  if (btnTodos) btnTodos.addEventListener("click", () => carregarProdutos());
 }
 
+// Função que exibe a seção apropriada
 function mostrarSecao(idSecao, callback, menuId) {
   console.log(`🔄 Alternando para seção: ${idSecao}`);
   esconderTodas();
@@ -99,18 +83,21 @@ function mostrarSecao(idSecao, callback, menuId) {
   }
 }
 
+// Evento que ocorre quando o DOM é carregado
 document.addEventListener("DOMContentLoaded", () => {
   checkLoginRedirect();
 
   const currentPage = window.location.pathname.split("/").pop();
   console.log("📄 Página atual:", currentPage);
 
+  // Se for a página de login
   if (currentPage === "login.html") {
     console.log("🧭 Página de login detectada");
     setupLoginForm(showAlert);
     return;
   }
 
+  // Obtendo as seções do produto, venda e funcionário
   const produtoSection = document.getElementById("produtoSection");
   const vendaSection = document.getElementById("vendaSection");
   const funcionarioSection = document.getElementById("funcionarioSection");
@@ -121,11 +108,13 @@ document.addEventListener("DOMContentLoaded", () => {
     funcionarioSection,
   });
 
+  // Obtendo os links de navegação
   const linkProdutos = document.getElementById("linkProdutos");
   const linkVendas = document.getElementById("linkVendas");
   const linkFuncionarios = document.getElementById("linkFuncionarios");
   const btnLogout = document.getElementById("btnLogout");
 
+  // Eventos para os links de navegação
   linkProdutos?.addEventListener("click", (e) => {
     e.preventDefault();
     console.log("📌 Produtos clicado");
@@ -154,17 +143,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }, "linkFuncionarios");
   });
 
+  // Logout
   btnLogout?.addEventListener("click", (e) => {
     e.preventDefault();
     console.log("🔓 Logout solicitado");
     logout();
   });
 
+  // Se estiver no formulário de produto já na carga
   if (document.getElementById("formProduto")) {
     console.log("🧾 Formulário de produtos detectado — inicializando");
     setupFormularioProduto();
   }
 
+  // Ao carregar a página, mostrar a seção apropriada
   if (vendaSection) {
     mostrarSecao("vendaSection", inicializarVendaAvancada, "linkVendas");
   } else if (funcionarioSection) {

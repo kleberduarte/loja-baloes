@@ -1,4 +1,5 @@
 // vendas.js
+
 import { authenticatedHeaders } from "./auth.js";  // Autenticação com token
 import { showAlert } from "./ui.js";               // Alerta na UI
 
@@ -11,7 +12,7 @@ export function inicializarVendaAvancada() {
 
   const totalVendaSpan = document.getElementById("totalVenda");
 
-  // Verifica se elemento #totalVenda existe no DOM
+  // Verifica se o elemento #totalVenda existe no DOM
   if (!totalVendaSpan) {
     console.warn("⚠️ Elemento #totalVenda não encontrado. VendaAvancada não será inicializada.");
     return;
@@ -26,13 +27,16 @@ export function inicializarVendaAvancada() {
     console.log("🔍 Produto selecionado:", codigo);
 
     try {
-      const res = await fetch(`${API_URL}/api/produtos/codigo/${codigo}`, {
+      const res = await fetch(`${API_URL}/api/produtos/buscar?busca=${encodeURIComponent(codigo)}`, {
         headers: authenticatedHeaders(),
       });
 
       if (!res.ok) throw new Error("Produto não encontrado");
 
-      const p = await res.json();
+      const data = await res.json();
+      const p = Array.isArray(data) ? data[0] : data; // Se for um array, pega o primeiro item
+
+      if (!p || !p.preco) throw new Error("Produto inválido");
 
       // Preenche os campos com os dados do produto
       document.getElementById("vendaNome").value = p.nome;
@@ -49,7 +53,7 @@ export function inicializarVendaAvancada() {
     }
   });
 
-  // 🧮 Evento: atualizar total do item quando quantidade muda
+  // 🧮 Evento: atualizar total do item quando a quantidade muda
   document.getElementById("quantidade")?.addEventListener("input", function () {
     const qtd = parseInt(this.value) || 0;
     const preco = parseFloat(document.getElementById("vendaPreco").value) || 0;
@@ -83,12 +87,12 @@ export function inicializarVendaAvancada() {
       </tr>
     `;
 
-    // Atualiza total geral da venda
+    // Atualiza o total geral da venda
     totalVenda += total;
     totalVendaSpan.innerText = totalVenda.toFixed(2);
     console.log("💰 Total atualizado:", totalVenda.toFixed(2));
 
-    // Limpa formulário e campos de exibição
+    // Limpa o formulário e os campos de exibição
     this.reset();
     ["vendaNome", "vendaPreco", "vendaDescricao", "vendaCategoria", "vendaKit", "totalItem"].forEach(id => {
       const el = document.getElementById(id);
@@ -143,7 +147,7 @@ export function inicializarVendaAvancada() {
       console.error("❌ Erro ao finalizar venda:", error);
       showAlert(error.message, "danger");
 
-      // Limpa interface mesmo com erro
+      // Limpa a interface mesmo com erro
       totalVenda = 0;
       totalVendaSpan.innerText = "0.00";
       document.getElementById("formVenda").reset();
