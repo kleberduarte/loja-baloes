@@ -10,9 +10,9 @@ export function mostrarProdutos() {
   if (!section) return console.warn("❌ Seção produtoSection não encontrada");
   section.style.display = "block";
 
-  carregarProdutos();  // Carrega todos os produtos
   adicionarEventosFiltros();
   setupFormularioProduto();
+  carregarProdutos();  // Carrega todos os produtos
 }
 
 // Carrega produtos (todos ou com endpoint customizado)
@@ -56,13 +56,13 @@ export function mostrarKits() {
 function adicionarEventosFiltros() {
   const btnBuscarCodigoNome = document.getElementById("btnBuscarCodigoNome");
   const btnBuscarCategoria = document.getElementById("btnBuscarCategoria");
-  const btnBuscarCodigo = document.getElementById("btnBuscarCodigo");
+  // const btnBuscarCodigo = document.getElementById("btnBuscarCodigo"); // Não existe no HTML
   const btnVerKits = document.getElementById("btnMostrarKits");
   const btnTodos = document.getElementById("btnTodosProdutos");
 
   btnBuscarCodigoNome?.addEventListener("click", buscarPorCodigoOuNome);
   btnBuscarCategoria?.addEventListener("click", filtrarPorCategoria);
-  btnBuscarCodigo?.addEventListener("click", buscarPorCodigo);
+  // btnBuscarCodigo?.addEventListener("click", buscarPorCodigo); // Removido pois botão não existe
   btnVerKits?.addEventListener("click", mostrarKits);
   btnTodos?.addEventListener("click", () => carregarProdutos());
 }
@@ -237,15 +237,15 @@ export function excluirProduto(id) {
 function renderizarTabela(produtos) {
   const tabela = document.getElementById("listaProdutos");
   if (!tabela) return;
-  tabela.innerHTML = "";
 
   if (!produtos || produtos.length === 0) {
     tabela.innerHTML = `<tr><td colspan="8" class="text-center">Nenhum produto encontrado.</td></tr>`;
     return;
   }
 
+  let html = "";
   produtos.forEach((p) => {
-    tabela.innerHTML += `
+    html += `
       <tr>
         <td>${p.codigo}</td>
         <td>${p.nome}</td>
@@ -255,11 +255,17 @@ function renderizarTabela(produtos) {
         <td>${p.categoria || "-"}</td>
         <td>${p.kit ? "✅" : "❌"}</td>
         <td>
-          <button id="editar-${p.id}" class="btn btn-sm btn-primary">Editar</button>
-          <button id="excluir-${p.id}" class="btn btn-sm btn-danger">Excluir</button>
+          <button id="editar-${p.id}" class="btn btn-sm btn-primary me-1" aria-label="Editar produto ${p.nome}">
+            <i class="bi bi-pencil-fill"></i> Editar
+          </button>
+          <button id="excluir-${p.id}" class="btn btn-sm btn-danger" aria-label="Excluir produto ${p.nome}">
+            <i class="bi bi-trash-fill"></i> Excluir
+          </button>
         </td>
       </tr>`;
   });
+
+  tabela.innerHTML = html;
 }
 
 // Liga os eventos dos botões Editar e Excluir da tabela
