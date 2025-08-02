@@ -56,7 +56,6 @@ function adicionarEventosFiltros() {
   const btnVerKits = document.getElementById("btnMostrarKits");
   const btnTodos = document.getElementById("btnTodosProdutos");
 
-  // Chamando a função buscarPorCodigoOuNome para o botão de busca
   if (btnBuscarCodigoNome) btnBuscarCodigoNome.addEventListener("click", buscarPorCodigoOuNome);
   if (btnBuscarCategoria) btnBuscarCategoria.addEventListener("click", filtrarPorCategoria);
   if (btnBuscarCodigo) btnBuscarCodigo.addEventListener("click", buscarPorCodigo);
@@ -97,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Obtendo as seções do produto, venda e funcionário
+  // Obtendo as seções
   const produtoSection = document.getElementById("produtoSection");
   const vendaSection = document.getElementById("vendaSection");
   const funcionarioSection = document.getElementById("funcionarioSection");
@@ -108,13 +107,13 @@ document.addEventListener("DOMContentLoaded", () => {
     funcionarioSection,
   });
 
-  // Obtendo os links de navegação
+  // Links do menu
   const linkProdutos = document.getElementById("linkProdutos");
   const linkVendas = document.getElementById("linkVendas");
   const linkFuncionarios = document.getElementById("linkFuncionarios");
   const btnLogout = document.getElementById("btnLogout");
 
-  // Eventos para os links de navegação
+  // Navegação
   linkProdutos?.addEventListener("click", (e) => {
     e.preventDefault();
     console.log("📌 Produtos clicado");
@@ -125,6 +124,15 @@ document.addEventListener("DOMContentLoaded", () => {
         adicionarEventosFiltros();
         console.log("✅ Eventos dos filtros adicionados com sucesso.");
       });
+
+      const btnLimpar = document.getElementById("btnLimparProduto");
+      if (btnLimpar) {
+        btnLimpar.addEventListener("click", () => {
+          const form = document.getElementById("formProduto");
+          form.reset();
+          document.getElementById("produtoKit").checked = false;
+        });
+      }
     }, "linkProdutos");
   });
 
@@ -154,9 +162,18 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("formProduto")) {
     console.log("🧾 Formulário de produtos detectado — inicializando");
     setupFormularioProduto();
+
+    const btnLimpar = document.getElementById("btnLimparProduto");
+    if (btnLimpar) {
+      btnLimpar.addEventListener("click", () => {
+        const form = document.getElementById("formProduto");
+        form.reset();
+        document.getElementById("produtoKit").checked = false;
+      });
+    }
   }
 
-  // Ao carregar a página, mostrar a seção apropriada
+  // Mostrar seção padrão ao carregar
   if (vendaSection) {
     mostrarSecao("vendaSection", inicializarVendaAvancada, "linkVendas");
   } else if (funcionarioSection) {
@@ -172,6 +189,15 @@ document.addEventListener("DOMContentLoaded", () => {
         adicionarEventosFiltros();
         console.log("✅ Eventos dos filtros adicionados com sucesso.");
       });
+
+      const btnLimpar = document.getElementById("btnLimparProduto");
+      if (btnLimpar) {
+        btnLimpar.addEventListener("click", () => {
+          const form = document.getElementById("formProduto");
+          form.reset();
+          document.getElementById("produtoKit").checked = false;
+        });
+      }
     }, "linkProdutos");
   }
 });
